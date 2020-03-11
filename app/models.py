@@ -11,14 +11,18 @@ Description:
 """
 from werkzeug.security import generate_password_hash, check_password_hash
 
-from app import db
+from app import db, login_manager
+from flask_login import UserMixin
 
 
 # Flask中一个Model子类就是数据库中的一个表。默认表名'User'.lower() ===> user
-class User(db.Model):
+class User(UserMixin,db.Model):
+    """
+    因为继承了Usermixin自动继承了里面的属性和方法
+    """
     __tablename__ = 'users'  # 自定义数据表的表名
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
-    username = db.Column(db.String(100), unique=True, nullable=False)
+    username = db.Column(db.String(100), nullable=False)
     password_hash = db.Column(db.String(200), nullable=True)
     email = db.Column(db.String(50))
     # 外键关联
@@ -49,4 +53,7 @@ class Role(db.Model):
     users = db.relationship('User', backref='role')
 
     def __repr__(self):
-        return "<Role: %s>" % (self.name)
+        return "<Role: %s>" %(self.name)
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
