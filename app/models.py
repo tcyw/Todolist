@@ -9,6 +9,8 @@ Description:
     2). 用户角色信息: Role
     3). 用户角色: 用户 = 1:n, 一对多关系，外键写在多的一端。
 """
+from flask import current_app
+from itsdangerous import TimedJSONWebSignatureSerializer
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from app import db, login_manager
@@ -27,6 +29,7 @@ class User(UserMixin,db.Model):
     email = db.Column(db.String(50))
     # 外键关联
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
+    conformed = db.Column(db.Boolean,default=False)
 
     @property
     def password(self):
@@ -40,7 +43,21 @@ class User(UserMixin,db.Model):
     def verify_password(self, password):
         # check_password_hash(hash, password) :密码散列值和用户输入的密码是
         return check_password_hash(self.password_hash, password)
-
+    def generate_confirmation_token(self,expire=3600):
+        """生成一个令牌，默认3600秒"""
+        s = TimedJSONWebSignatureSerializer(current_app.config['SECRET_KEY'],expire)
+        return s.dumps({'confirm':self.id})
+    def confirm(self,token):
+        s = TimedJSONWebSignatureSerializer(current_app.config['SECRET_KEY'])
+        try:
+            data = s.loads(token) # {confirm : 1}
+        except Exception as e:
+            return False
+        else:
+            self.conformed = True
+            db.session.add(self)  # 把当前信息存入到缓存中
+            db.session.commit() # 并且提交到数据库
+            return True
     def __repr__(self):
         return "<User: %s>" % (self.username)
 

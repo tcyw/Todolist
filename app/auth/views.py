@@ -13,6 +13,7 @@ from flask_login import login_user, logout_user, login_required
 from app import db
 from app.auth import auth
 from app.auth.forms import RegisterationForm,LoginForm
+from app.email import send_mail
 from app.models import User, Role
 
 
@@ -42,7 +43,14 @@ def register():
         user.role = Role.query.filter_by(name='普通会员').first()
         db.session.add(user)
         flash('用户%s注册成功' %(user.username),category='success')
-        return redirect('/login')
+        # 提交数据库之后才能赋予新用户 id 值,而确认令牌需要用到 id ,所以不能延后提交。
+        db.session.commit()
+        token = user.generate_confirmation_token()
+        send_mail(to=user.email,subject='请激活你的任务管理平台帐号',
+                  filename='confirm',user=user,token=token
+                  )
+        flash('平台验证消息已经发送到你的邮箱, 请确认后登录',category='success')
+        # return redirect('/login')
 
     return render_template('register.html',form=form)
 
