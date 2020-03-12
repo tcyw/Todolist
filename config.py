@@ -24,10 +24,10 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = True
     FLASKY_MAIL_SUBJECT_PREFIX = '[西部开源]'
     FLASKY_MAIL_SENDER = '741047561@qq.com'
-    MAIL_SERVER = 'smtp.163.com'        # 邮件服务器
-    MAIL_PORT = 25      # 邮件端口
-    MAIL_USERNAME = 'yw17392517656@163.com'
-    MAIL_PASSWORD = 'syyy1995713'
+    # MAIL_SERVER = 'smtp.163.com'        # 邮件服务器
+    # MAIL_PORT = 25      # 邮件端口
+    # MAIL_USERNAME = 'yw17392517656@163.com'
+    # MAIL_PASSWORD = 'syyy1995713'
 
     @staticmethod
     def init_app(app):
@@ -38,11 +38,13 @@ class DevelopmentConfig(Config):
     """
     # 启用了调试支持，服务器会在代码修改后自动重新载入，并在发生错误时提供一个相当有用的调试器。
     DEBUG = True
-    MAIL_SERVER = 'smtp.qq.com'
-    MAIL_PORT = 587
-    MAIL_USE_TLS = True
-    MAIL_USERNAME = os.environ.get('MAIL_USERNAME') or '976131979'
-    MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD') or '密码'
+    MAIL_SERVER = 'smtp.163.com'
+    MAIL_PORT = 25
+    MAIL_USERNAME = 'yw17392517656@163.com'
+    MAIL_PASSWORD = 'syyy1995713'
+    # MAIL_USE_TLS = True
+    # MAIL_USERNAME = os.environ.get('MAIL_USERNAME') or '976131979'
+    # MAIL_PASSWORD = os.environ.get('MAIL_PASSWORD') or '密码'
     SQLALCHEMY_DATABASE_URI = 'sqlite:///' + os.path.join(basedir, 'datadev.sqlite')
 class TestingConfig(Config):
     """

@@ -9,6 +9,6 @@ Description:
 # 2)应用蓝图
 from app.todo import todo
 
-@todo.route('/')
+@todo.route('/todo/')
 def index():
-    return 'index'
+    return 'todo index'

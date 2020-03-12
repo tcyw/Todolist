@@ -29,7 +29,7 @@ class User(UserMixin,db.Model):
     email = db.Column(db.String(50))
     # 外键关联
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
-    conformed = db.Column(db.Boolean,default=False)
+    confirmed = db.Column(db.Boolean,default=False)
 
     @property
     def password(self):
@@ -54,7 +54,7 @@ class User(UserMixin,db.Model):
         except Exception as e:
             return False
         else:
-            self.conformed = True
+            self.confirmed = True
             db.session.add(self)  # 把当前信息存入到缓存中
             db.session.commit() # 并且提交到数据库
             return True
