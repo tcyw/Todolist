@@ -9,6 +9,8 @@ Description:
     2). 用户角色信息: Role
     3). 用户角色: 用户 = 1:n, 一对多关系，外键写在多的一端。
 """
+from datetime import datetime
+
 from flask import current_app
 from itsdangerous import TimedJSONWebSignatureSerializer
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -27,9 +29,29 @@ class User(UserMixin,db.Model):
     username = db.Column(db.String(100), nullable=False)
     password_hash = db.Column(db.String(200), nullable=True)
     email = db.Column(db.String(50))
+    # 新添加的用户资料
+    name = db.Column(db.String(64)) # 用户的真实姓名
+    location = db.Column(db.String(64)) # 用户的位置
+    about_me = db.Column(db.Text()) # 自我介绍
+    # 注册日期
+    # default 参数可以接受函数的默认值
+    # 所以每次生成默认值时db.column()都会调用指定的函数
+    create_time = db.Column(db.DateTime,default=datetime.utcnow)
+    last_seen = db.Column(db.DateTime(), default=datetime.utcnow)
     # 外键关联
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
     confirmed = db.Column(db.Boolean,default=False)
+    # 反向引用 1)。User添加属性todos 2)Todo添加属性user
+    todos = db.relationship('Todo',backref='user')
+    # 反向引用 1)。User添加属性category 2)category添加属性user
+    categories = db.relationship('Category', backref='user')
+
+
+    def ping(self):
+        """刷新用户的最后访问事件"""
+        self.last_seen = datetime.utcnow()
+        from flask_login import current_user
+        db.session.add(current_user)
 
     @property
     def password(self):
@@ -60,8 +82,6 @@ class User(UserMixin,db.Model):
             return True
     def __repr__(self):
         return "<User: %s>" % (self.username)
-
-
 class Role(db.Model):
     __tablename__ = 'roles'
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -74,3 +94,33 @@ class Role(db.Model):
 @login_manager.user_loader
 def load_user(user_id):
     return User.query.get(int(user_id))
+
+# 任务和分类的关系: 一对多
+# 分类是一, 任务是多, 外键写在多的一端
+class Todo(db.Model):
+    __tablename__ = 'todos'
+    id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    content = db.Column(db.String(100))  # 任务内容
+    status = db.Column(db.Boolean, default=False)  # 任务的状态
+    add_time = db.Column(db.DateTime, default=datetime.now())  # 任务创建时间
+    # User:Todo = 1:N
+    user_id = db.Column(db.Integer,db.ForeignKey('users.id'))
+    # Category:Todo=1:N
+    category_id = db.Column(db.Integer,db.ForeignKey('categories.id'))
+
+    def __repr__(self):
+       return "<Todo %s>" % (self.content[:6])
+
+class Category(db.Model):
+    __tablename__ = 'categories'
+    id = db.Column(db.Integer, autoincrement=True, primary_key=True)
+    name = db.Column(db.String(20), unique=True)
+    add_time = db.Column(db.DateTime, default=datetime.now())  # 任务创建时间
+    # User:Category = 1:N
+    user_id = db.Column(db.Integer,db.ForeignKey('users.id'))
+    # 反向引用
+    todos = db.relationship('Todo',backref='category')
+    def __repr__(self):
+       return "<Category %s>" % (self.name)
+
+

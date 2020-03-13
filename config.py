@@ -24,6 +24,7 @@ class Config:
     SQLALCHEMY_TRACK_MODIFICATIONS = True
     FLASKY_MAIL_SUBJECT_PREFIX = '[西部开源]'
     FLASKY_MAIL_SENDER = '741047561@qq.com'
+    PER_PAGE = 2
     # MAIL_SERVER = 'smtp.163.com'        # 邮件服务器
     # MAIL_PORT = 25      # 邮件端口
     # MAIL_USERNAME = 'yw17392517656@163.com'
